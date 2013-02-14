@@ -10,7 +10,7 @@ namespace DelphiJumpInCode
 {
 	class Program
 	{
-		private enum JumpToCommands { Implementation };
+		private enum JumpToCommands { Implementation, Interface };
 
 		private static Predicate<string> GetLineFindPredicateForJumpToCommand(JumpToCommands jumptoCommand)
 		{
@@ -18,6 +18,8 @@ namespace DelphiJumpInCode
 			{
 				case JumpToCommands.Implementation:
 					return line => line.Trim().Equals("Implementation", StringComparison.InvariantCultureIgnoreCase);
+				case JumpToCommands.Interface:
+					return line => line.Trim().Equals("Interface", StringComparison.InvariantCultureIgnoreCase);
 				default:
 					return line => false;
 			}
@@ -49,10 +51,13 @@ namespace DelphiJumpInCode
 
 			var simulator = new WindowsInput.KeyboardSimulator();
 
-			simulator.KeyUp(WindowsInput.Native.VirtualKeyCode.LMENU);//Because in Delphi we pressed Alt to open the Tools menu and call our "Tool"
+			if (Win32Api.GetKeyState(Win32Api.VirtualKeyStates.VK_LMENU) != 0)
+				simulator.KeyUp(WindowsInput.Native.VirtualKeyCode.LMENU);//Because in Delphi we pressed Alt to open the Tools menu and call our "Tool"
 			simulator.ModifiedKeyStroke(WindowsInput.Native.VirtualKeyCode.CONTROL, WindowsInput.Native.VirtualKeyCode.VK_G);
 			simulator.TextEntry((lineIndexWhichMatchedPredicate + 1).ToString());//Line numbers start at 1
+			simulator.KeyPress(WindowsInput.Native.VirtualKeyCode.DELETE);//Because delphi appends autocompletion stuff
 			simulator.KeyPress(WindowsInput.Native.VirtualKeyCode.RETURN);
+			//Do me maybe require a pause after each keystroke simulation?
 
 			return 0;
 		}
